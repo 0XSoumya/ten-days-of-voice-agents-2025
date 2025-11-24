@@ -1,4 +1,7 @@
 import logging
+import json
+import os
+from datetime import datetime
 
 from dotenv import load_dotenv
 from livekit.agents import (
@@ -23,90 +26,135 @@ logger = logging.getLogger("agent")
 load_dotenv(".env.local")
 
 
+# -----------------------------
+# Helper: Load previous wellness log
+# -----------------------------
+def load_wellness_history():
+    path = "wellness_log.json"
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path, "r") as f:
+            return json.load(f)
+    except:
+        return []
+
+
+# -----------------------------
+# Assistant with Structured Tool
+# -----------------------------
 class Assistant(Agent):
     def __init__(self) -> None:
 
-        # Barista persona using structured tool output
+        # Load past check-ins for memory
+        past_entries = load_wellness_history()
+
+        if past_entries:
+            last_entry = past_entries[-1]
+            last_summary = last_entry.get("summary", "")
+            memory_hint = (
+                f"Last time, the user reported mood: '{last_entry.get('mood', '')}', "
+                f"energy: '{last_entry.get('energy', '')}', and stress: '{last_entry.get('stress', '')}'. "
+                f"Summary from last session: '{last_summary}'. "
+                "Use this to gently reference previous check-ins."
+            )
+        else:
+            memory_hint = (
+                "This is the user's first check-in. Do not reference past sessions."
+            )
+
         super().__init__(
-            instructions="""
-You are a friendly barista at BrewBuddy Cafe.
+            instructions=f"""
+You are a supportive, calm, grounded health & wellness companion.
+You help the user reflect on how they're feeling today.
 
-Your task is to collect a complete coffee order from the user.
-The final order MUST include the following fields:
+Memory:
+{memory_hint}
 
-- drinkType (string)
-- size (string)
-- milk (string)
-- extras (list of strings)
-- name (string)
+Your check-in flow MUST follow these steps:
 
-Rules:
+1. Ask about the user's mood.
+2. Ask about their energy level.
+3. Ask about stress, worries, or anything weighing on them.
+4. Ask for 1–3 simple goals or intentions for the day.
+5. Offer small, realistic, non-medical suggestions.
+6. Recap what you heard:
+   - mood
+   - energy
+   - stress
+   - goals
+7. Ask “Does this sound right?”
+8. When the user confirms, CALL the tool save_checkin() with this JSON format:
 
-1. Ask clarifying questions until ALL fields are known.
-2. Do NOT guess. Ask if uncertain.
-3. When and ONLY when all fields are known, call the tool save_order() with arguments:
-{
-  "drinkType": "...",
-  "size": "...",
-  "milk": "...",
-  "extras": ["..."],
-  "name": "..."
-}
-4. Do not respond with anything else when calling the tool.
-5. After the tool is called, you may give a friendly confirmation.
+{{
+  "mood": "<string>",
+  "energy": "<string>",
+  "stress": "<string>",
+  "goals": ["<string>", ...],
+  "summary": "<string>"
+}}
 
-You are warm, concise, and helpful.
+IMPORTANT RULES:
+- NEVER diagnose or give medical advice.
+- Suggestions must be simple and gentle.
+- ONLY call save_checkin() after recap + confirmation.
+- When calling the tool, return ONLY the tool call.
+- After the tool call completes, you may send a short goodbye message.
 """
         )
 
-    # Tool that LLM will call once the order is complete
+    # -----------------------------
+    # Tool to save the check-in
+    # -----------------------------
     @function_tool
-    async def save_order(
+    async def save_checkin(
         self,
         ctx: RunContext,
-        drinkType: str,
-        size: str,
-        milk: str,
-        extras: list[str],
-        name: str,
+        mood: str,
+        energy: str,
+        stress: str,
+        goals: list[str],
+        summary: str,
     ):
-        """Save the final coffee order to a JSON file."""
+        """Save the wellness check-in to a local JSON log file."""
 
-        order = {
-            "drinkType": drinkType,
-            "size": size,
-            "milk": milk,
-            "extras": extras,
-            "name": name,
+        entry = {
+            "timestamp": datetime.now().isoformat(),
+            "mood": mood,
+            "energy": energy,
+            "stress": stress,
+            "goals": goals,
+            "summary": summary,
         }
 
-        import os, json
-        os.makedirs("orders", exist_ok=True)
+        path = "wellness_log.json"
+        if os.path.exists(path):
+            with open(path, "r") as f:
+                data = json.load(f)
+        else:
+            data = []
 
-        with open("orders/final_order.json", "w") as f:
-            json.dump(order, f, indent=2)
+        data.append(entry)
 
-        return (
-            f"Order saved! Thanks {name}, your {size} {drinkType} with {milk} is being prepared."
-        )
+        with open(path, "w") as f:
+            json.dump(data, f, indent=2)
+
+        return "Your wellness check-in has been saved."
 
 
+# -----------------------------
+# Voice Pipeline + Session Setup
+# -----------------------------
 def prewarm(proc: JobProcess):
     proc.userdata["vad"] = silero.VAD.load()
 
 
 async def entrypoint(ctx: JobContext):
-    # Logging setup
-    ctx.log_context_fields = {
-        "room": ctx.room.name,
-    }
+    ctx.log_context_fields = {"room": ctx.room.name}
 
-    # Voice pipeline
     session = AgentSession(
         stt=deepgram.STT(model="nova-3"),
-        llm=google.LLM(
-            model="gemini-2.5-flash",
-        ),
+        llm=google.LLM(model="gemini-2.5-flash"),
         tts=murf.TTS(
             voice="en-US-matthew",
             style="Conversation",
@@ -118,21 +166,18 @@ async def entrypoint(ctx: JobContext):
         preemptive_generation=True,
     )
 
-    # Metrics
     usage_collector = metrics.UsageCollector()
 
     @session.on("metrics_collected")
-    def _on_metrics_collected(ev: MetricsCollectedEvent):
+    def _on_metrics(ev: MetricsCollectedEvent):
         metrics.log_metrics(ev.metrics)
         usage_collector.collect(ev.metrics)
 
     async def log_usage():
-        summary = usage_collector.get_summary()
-        logger.info(f"Usage: {summary}")
+        logger.info(f"Usage: {usage_collector.get_summary()}")
 
     ctx.add_shutdown_callback(log_usage)
 
-    # Start the session
     await session.start(
         agent=Assistant(),
         room=ctx.room,
