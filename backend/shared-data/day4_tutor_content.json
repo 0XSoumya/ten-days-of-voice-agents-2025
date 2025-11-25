@@ -1,0 +1,14 @@
+[
+  {
+    "id": "variables",
+    "title": "Variables",
+    "summary": "Variables store values so you can reuse them later. They act as containers for information, such as numbers, text, or other data types.",
+    "sample_question": "What is a variable and why is it useful?"
+  },
+  {
+    "id": "loops",
+    "title": "Loops",
+    "summary": "Loops let you repeat an action multiple times without writing the same code repeatedly. The two common kinds are for loops and while loops.",
+    "sample_question": "Explain the difference between a for loop and a while loop."
+  }
+]
