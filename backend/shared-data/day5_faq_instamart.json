@@ -1,0 +1,68 @@
+[
+  {
+    "id": "im-1",
+    "keywords": ["wrong item", "instamart wrong", "instamart incorrect order"],
+    "question": "I received a wrong item on my Instamart order.",
+    "answer": "We're sorry about the mismatch in your order. Please share an image of the item you received so we can check and help you accordingly."
+  },
+  {
+    "id": "im-2",
+    "keywords": ["instamart missing", "missing item", "did not receive", "item not delivered"],
+    "question": "I didn’t receive an item in my Instamart order.",
+    "answer": "Please share an image of the items you received. Our team will verify and assist you with the missing item."
+  },
+  {
+    "id": "im-3",
+    "keywords": ["instamart spoiled", "damaged", "expired", "leaked", "bad product"],
+    "question": "I received a spoiled / damaged / expired / leaking item.",
+    "answer": "We apologize for the inconvenience. Please share an image of the item along with its packaging so we can help you better."
+  },
+  {
+    "id": "im-4",
+    "keywords": ["wrong quantity", "quantity mismatch", "less quantity", "more quantity"],
+    "question": "I received an item with incorrect quantity.",
+    "answer": "Please share an image of the item with the quantity mismatch clearly visible. We will look into it immediately."
+  },
+  {
+    "id": "im-5",
+    "keywords": ["instamart refund", "refund not received", "money not returned"],
+    "question": "I have not received my refund.",
+    "answer": "Refunds are usually processed within 5–7 business days depending on your bank. If it has been longer, please let us know your order ID and payment method."
+  },
+  {
+    "id": "im-6",
+    "keywords": ["refund status", "where is my refund", "track refund"],
+    "question": "How can I track my refund status?",
+    "answer": "Refunds are automatically processed to your original payment method. You can check the ‘Help’ section under your Instamart order for more details."
+  },
+  {
+    "id": "im-7",
+    "keywords": ["instamart delivery time", "instamart delay", "delivery delayed"],
+    "question": "My Instamart order is delayed.",
+    "answer": "We understand delays can be frustrating. Delivery time can vary due to high demand or operational issues. You can track the latest status in the app."
+  },
+  {
+    "id": "im-8",
+    "keywords": ["instamart cancellation", "cancel order", "order cancelled"],
+    "question": "Why was my Instamart order cancelled?",
+    "answer": "Orders may be cancelled due to stock unavailability, operational issues, or if the delivery partner couldn't reach your location. Any charged amount will be refunded."
+  },
+  {
+    "id": "im-9",
+    "keywords": ["instamart payment failed", "money deducted", "payment deducted", "payment issue"],
+    "question": "My payment failed but the amount was deducted.",
+    "answer": "In rare cases, failed payments may still result in temporary deductions. These are usually reversed by your bank within 2–5 business days."
+  },
+  {
+    "id": "im-10",
+    "keywords": ["instamart slot", "delivery slot", "slot not available"],
+    "question": "Why am I unable to select a delivery slot?",
+    "answer": "Delivery slots may be temporarily unavailable due to high demand. Please try again after some time."
+  },
+  {
+    "id": "im-11",
+    "keywords": ["instamart pincode", "does instamart deliver in", "service area", "not available"],
+    "question": "Instamart is not available in my area.",
+    "answer": "Instamart availability depends on your pincode. We are expanding rapidly, so please check back later as your area may be added soon."
+  }
+]
