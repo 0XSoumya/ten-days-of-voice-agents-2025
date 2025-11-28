@@ -1,0 +1,22 @@
+{
+  "peanut butter sandwich": ["Britannia Bread", "Peanut Butter 340g"],
+  "pasta": ["Pasta 500g", "Pasta Sauce 400g"],
+  "salad": ["Cucumber 500g", "Tomatoes 1kg", "Onions 1kg"],
+  "omelette": ["Eggs 12 Pack", "Amul Butter 200g"],
+  "milk tea": ["Amul Milk 1L", "Tata Tea Premium", "Sugar 1kg"],
+  "maggi meal": ["Maggi Masala Noodles", "Onions 1kg"],
+  "breakfast combo": ["Amul Milk 1L", "Bananas 6 pcs", "Britannia Bread"],
+  "grilled cheese": ["Britannia Bread", "Amul Cheese Slices"],
+  "fruit bowl": ["Bananas 6 pcs", "Apples 1kg", "Grapes 500g"],
+  "pav bhaji": ["Pav Bread Pack", "Amul Butter 200g", "Onions 1kg", "Tomatoes 1kg"],
+  "sandwich combo": ["Tomatoes 1kg", "Cucumber 500g", "Britannia Bread", "Amul Cheese Slices"],
+  "veg pasta": ["Pasta 500g", "Pasta Sauce 400g", "Tomatoes 1kg", "Onions 1kg"],
+  "panipuri": ["Puri Pack", "Boiled Potatoes 1kg", "Onions 1kg"],
+  "lemon tea": ["Lemons 500g", "Tata Tea Premium"],
+  "cold coffee": ["Instant Coffee 200g", "Amul Milk 1L", "Sugar 1kg"],
+  "smoothie": ["Bananas 6 pcs", "Amul Milk 1L", "Grapes 500g"],
+  "pizza meal": ["Frozen Margherita Pizza", "Coke 750ml"],
+  "burger combo": ["Veg Burger Patty Pack", "Lettuce 250g", "Onions 1kg"],
+  "chaat plate": ["Puri Pack", "Onions 1kg", "Tomatoes 1kg", "Sev 200g"],
+  "upma": ["Upma Mix 500g", "Onions 1kg"]
+}

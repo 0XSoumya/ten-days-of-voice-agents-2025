@@ -1,0 +1,49 @@
+[
+  { "id": "milk-toned", "name": "Toned Milk 1L", "category": "groceries", "price": 54, "brand": "Amul", "tags": ["dairy"] },
+  { "id": "milk-fullcream", "name": "Full Cream Milk 1L", "category": "groceries", "price": 64, "brand": "Amul", "tags": ["dairy"] },
+  { "id": "bread-wholewheat", "name": "Whole Wheat Bread", "category": "groceries", "price": 45, "brand": "Modern", "tags": ["vegan"] },
+  { "id": "bread-white", "name": "White Bread", "category": "groceries", "price": 40, "brand": "Britannia" },
+  { "id": "eggs-regular", "name": "Regular Eggs (12 pcs)", "category": "groceries", "price": 76 },
+  { "id": "eggs-country", "name": "Country Eggs (6 pcs)", "category": "groceries", "price": 68 },
+
+  { "id": "banana", "name": "Bananas (6 pcs)", "category": "fruits", "price": 45 },
+  { "id": "apple", "name": "Apple Shimla (1kg)", "category": "fruits", "price": 160 },
+  { "id": "tomato", "name": "Tomato 1kg", "category": "vegetables", "price": 38 },
+  { "id": "potato", "name": "Potato 1kg", "category": "vegetables", "price": 28 },
+  { "id": "onion", "name": "Onion 1kg", "category": "vegetables", "price": 32 },
+  { "id": "cucumber", "name": "Cucumber 500g", "category": "vegetables", "price": 30 },
+
+  { "id": "chips-salted", "name": "Potato Chips Salted", "category": "snacks", "price": 20, "brand": "Lays" },
+  { "id": "chips-masala", "name": "Masala Chips", "category": "snacks", "price": 20, "brand": "Lays" },
+  { "id": "biscuits-marie", "name": "Marie Biscuits", "category": "snacks", "price": 35, "brand": "Britannia" },
+  { "id": "biscuits-goodday", "name": "Good Day Butter Cookies", "category": "snacks", "price": 30, "brand": "Britannia" },
+  { "id": "chocolate-dairy-milk", "name": "Dairy Milk Chocolate 50g", "category": "snacks", "price": 45 },
+  { "id": "chocolate-kitkat", "name": "KitKat 4 Finger", "category": "snacks", "price": 30 },
+
+  { "id": "tea-taj", "name": "Taj Mahal Tea 250g", "category": "beverages", "price": 155 },
+  { "id": "coffee-bru", "name": "Bru Instant Coffee 100g", "category": "beverages", "price": 299 },
+  { "id": "coke", "name": "Coca Cola 750ml", "category": "beverages", "price": 40 },
+  { "id": "sprite", "name": "Sprite 750ml", "category": "beverages", "price": 40 },
+  { "id": "juice-orange", "name": "Orange Juice 1L", "category": "beverages", "price": 110 },
+
+  { "id": "pasta-penne", "name": "Penne Pasta 500g", "category": "cooking", "price": 110, "tags": ["vegan"] },
+  { "id": "pasta-sauce-red", "name": "Red Pasta Sauce 250g", "category": "cooking", "price": 99 },
+  { "id": "oil-sunflower", "name": "Sunflower Oil 1L", "category": "cooking", "price": 145 },
+  { "id": "rice-basmati", "name": "Basmati Rice 1kg", "category": "cooking", "price": 120 },
+  { "id": "atta-wheat", "name": "Whole Wheat Atta 1kg", "category": "cooking", "price": 55 },
+  { "id": "dal-moong", "name": "Moong Dal 1kg", "category": "cooking", "price": 125 },
+
+  { "id": "tissue-box", "name": "Tissue Box (200 pulls)", "category": "household", "price": 65 },
+  { "id": "detergent-surf", "name": "Surf Excel Easy Wash 1kg", "category": "household", "price": 110 },
+  { "id": "dish-liquid", "name": "Vim Dishwash Liquid 500ml", "category": "household", "price": 55 },
+  { "id": "handwash-lifebuoy", "name": "Lifebuoy Handwash 500ml", "category": "household", "price": 85 },
+
+  { "id": "pizza-margherita", "name": "Margherita Pizza", "category": "prepared_food", "price": 199 },
+  { "id": "pizza-veggie", "name": "Veggie Pizza", "category": "prepared_food", "price": 249 },
+  { "id": "sandwich-veggie", "name": "Veggie Sandwich", "category": "prepared_food", "price": 120 },
+  { "id": "burger-veg", "name": "Veg Burger", "category": "prepared_food", "price": 99 },
+  { "id": "pasta-ready", "name": "Ready-to-Eat Pasta", "category": "prepared_food", "price": 150 },
+
+  { "id": "peanut-butter", "name": "Peanut Butter 400g", "category": "healthy", "price": 165, "tags": ["protein", "vegan"] },
+  { "id": "oats-regular", "name": "Plain Oats 1kg", "category": "healthy", "price": 130, "tags": ["vegan"] }
+]
