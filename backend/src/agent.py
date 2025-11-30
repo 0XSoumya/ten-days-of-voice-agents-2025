@@ -1,6 +1,8 @@
+# backend/src/agent.py
 import logging
-
+import json
 from dotenv import load_dotenv
+
 from livekit.agents import (
     Agent,
     AgentSession,
@@ -15,129 +17,185 @@ from livekit.agents import (
     function_tool,
     RunContext,
 )
+
 from livekit.plugins import murf, silero, google, deepgram, noise_cancellation
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
-logger = logging.getLogger("agent")
+# Import ACP-style merchant layer
+import merchant
 
+logger = logging.getLogger("agent")
 load_dotenv(".env.local")
 
 
-class Assistant(Agent):
-    def __init__(self) -> None:
+# ==============================================================#
+# Helper — product summarizer
+# ==============================================================#
 
-        # Barista persona using structured tool output
+def summarize_products(products: list) -> str:
+    """
+    Create a short, voice-friendly summary of product list.
+    """
+    if not products:
+        return "I couldn't find any products matching that."
+
+    lines = []
+    for i, p in enumerate(products[:5]):
+        idx = i + 1
+        price = p.get("price", "price not available")
+        name = p.get("name", "Unnamed product")
+        extra = ""
+
+        if "color" in p and isinstance(p["color"], list):
+            extra += f" Colors: {', '.join(p['color'])}."
+        if "sizes" in p and isinstance(p["sizes"], list):
+            extra += f" Sizes: {', '.join(p['sizes'])}."
+
+        lines.append(f"{idx}. {name}, priced at {price} rupees.{extra}")
+
+    return "Here are some options: " + " ".join(lines)
+
+
+# ==============================================================#
+# Day 9 E-commerce Agent
+# ==============================================================#
+
+class CommerceAgent(Agent):
+    def __init__(self):
         super().__init__(
             instructions="""
-You are a friendly barista at BrewBuddy Cafe.
+You are RUFUS — a knowledgeable, friendly e-commerce voice assistant.
 
-Your task is to collect a complete coffee order from the user.
-The final order MUST include the following fields:
+IMPORTANT RULES — DO NOT BREAK THESE:
+1. Our catalog DOES NOT include stock levels. All products are ALWAYS available.
+2. NEVER say “out of stock”, “unavailable”, or guess inventory.
+3. Only use information returned by the tools:
+   - list_products(filters)
+   - create_order(line_items)
+   - get_last_order()
 
-- drinkType (string)
-- size (string)
-- milk (string)
-- extras (list of strings)
-- name (string)
+Your job:
+- Understand the user’s intent,
+- Call list_products() when they ask for anything about browsing or availability,
+- Then summarize results,
+- And call create_order() when they ask to buy something.
 
-Rules:
+When the user asks “is this in stock?” respond:
+"Yes, it is available. Would you like to order it?"
 
-1. Ask clarifying questions until ALL fields are known.
-2. Do NOT guess. Ask if uncertain.
-3. When and ONLY when all fields are known, call the tool save_order() with arguments:
-{
-  "drinkType": "...",
-  "size": "...",
-  "milk": "...",
-  "extras": ["..."],
-  "name": "..."
-}
-4. Do not respond with anything else when calling the tool.
-5. After the tool is called, you may give a friendly confirmation.
-
-You are warm, concise, and helpful.
+Keep responses short, friendly, and accurate.
 """
+
         )
 
-    # Tool that LLM will call once the order is complete
-    @function_tool
-    async def save_order(
-        self,
-        ctx: RunContext,
-        drinkType: str,
-        size: str,
-        milk: str,
-        extras: list[str],
-        name: str,
-    ):
-        """Save the final coffee order to a JSON file."""
-
-        order = {
-            "drinkType": drinkType,
-            "size": size,
-            "milk": milk,
-            "extras": extras,
-            "name": name,
+        # Session state
+        self.state = {
+            "last_products": [],  # results from last list call (list of product dicts)
         }
 
-        import os, json
-        os.makedirs("orders", exist_ok=True)
+    # ==========================================================
+    # Tools (ACP-inspired)
+    # ==========================================================
 
-        with open("orders/final_order.json", "w") as f:
-            json.dump(order, f, indent=2)
+    @function_tool
+    async def list_products(self, ctx: RunContext, filters: dict | None = None) -> dict:
+        """
+        Returns matching products using merchant.list_products.
+        Stores last results in session state for index-based references.
+        """
+        try:
+            results = merchant.list_products(filters or {})
+        except Exception as e:
+            logger.exception("merchant.list_products failed")
+            return {"results": [], "count": 0, "error": str(e)}
 
-        return (
-            f"Order saved! Thanks {name}, your {size} {drinkType} with {milk} is being prepared."
-        )
+        # save a trimmed copy (avoid huge payloads)
+        self.state["last_products"] = results[:20] if isinstance(results, list) else []
+        return {"results": results, "count": len(results)}
 
+    @function_tool
+    async def create_order(self, ctx: RunContext, line_items: list) -> dict:
+        """
+        Creates an order using merchant.create_order.
+        line_items: [{ "product_id": "...", "quantity": 1 }, ...]
+        """
+        try:
+            order = merchant.create_order(line_items)
+        except Exception as e:
+            logger.exception("merchant.create_order failed")
+            return {"error": str(e)}
+        return order
+
+    @function_tool
+    async def get_last_order(self, ctx: RunContext) -> dict | None:
+        """
+        Returns the user's most recent order.
+        """
+        try:
+            return merchant.get_last_order()
+        except Exception as e:
+            logger.exception("merchant.get_last_order failed")
+            return {"error": str(e)}
+
+    # ==========================================================
+    # Message handler (LLM orchestrates tool calls)
+    # ==========================================================
+
+    async def on_message(self, ctx, msg):
+        """
+        All interpretation is done by Gemini through tool calling.
+        Keep only a short onboarding message here; otherwise delegate to LLM.
+        """
+        text = (msg.text or "").lower().strip()
+
+        # On very first user message, greet
+        if any(g in text for g in ("hello", "hi")) or not self.state.get("last_products"):
+            await ctx.send_message(
+                "Hi! I'm Rufus, your shopping assistant. "
+                "Tell me what you're looking for — for example, "
+                "'show me hoodies under 1500', or 'do you have blue mugs?'."
+            )
+
+        # Delegate entire reasoning to the LLM (tool-calling enabled)
+        # The LLM will call list_products/create_order/get_last_order as needed.
+        await ctx.send_message(text, allow_llm=True)
+
+
+# ==============================================================#
+# LiveKit Setup
+# ==============================================================#
 
 def prewarm(proc: JobProcess):
     proc.userdata["vad"] = silero.VAD.load()
 
 
 async def entrypoint(ctx: JobContext):
-    # Logging setup
-    ctx.log_context_fields = {
-        "room": ctx.room.name,
-    }
 
-    # Voice pipeline
     session = AgentSession(
         stt=deepgram.STT(model="nova-3"),
-        llm=google.LLM(
-            model="gemini-2.5-flash",
-        ),
+        llm=google.LLM(model="gemini-2.5-flash"),   # ENABLE LLM
         tts=murf.TTS(
             voice="en-US-matthew",
             style="Conversation",
             tokenizer=tokenize.basic.SentenceTokenizer(min_sentence_len=2),
-            text_pacing=True,
+            text_pacing=True
         ),
         turn_detection=MultilingualModel(),
         vad=ctx.proc.userdata["vad"],
         preemptive_generation=True,
     )
 
-    # Metrics
-    usage_collector = metrics.UsageCollector()
+    usage = metrics.UsageCollector()
 
     @session.on("metrics_collected")
-    def _on_metrics_collected(ev: MetricsCollectedEvent):
-        metrics.log_metrics(ev.metrics)
-        usage_collector.collect(ev.metrics)
+    def _collect(ev: MetricsCollectedEvent):
+        usage.collect(ev.metrics)
 
-    async def log_usage():
-        summary = usage_collector.get_summary()
-        logger.info(f"Usage: {summary}")
-
-    ctx.add_shutdown_callback(log_usage)
-
-    # Start the session
     await session.start(
-        agent=Assistant(),
+        agent=CommerceAgent(),
         room=ctx.room,
         room_input_options=RoomInputOptions(
-            noise_cancellation=noise_cancellation.BVC(),
+            noise_cancellation=noise_cancellation.BVC()
         ),
     )
 

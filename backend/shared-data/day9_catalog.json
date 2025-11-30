@@ -1,0 +1,102 @@
+[
+  {
+    "id": "mug-001",
+    "name": "Stoneware Coffee Mug",
+    "description": "Handcrafted mug with matte finish.",
+    "price": 249,
+    "currency": "INR",
+    "category": "mugs",
+    "color": ["white", "blue"],
+    "sizes": []
+  },
+  {
+    "id": "mug-002",
+    "name": "Galaxy Ceramic Mug",
+    "description": "Heat-reactive design reveals galaxy pattern.",
+    "price": 399,
+    "currency": "INR",
+    "category": "mugs",
+    "color": ["black"],
+    "sizes": []
+  },
+  {
+    "id": "hoodie-001",
+    "name": "Classic Black Hoodie",
+    "description": "Soft fleece interior with relaxed fit.",
+    "price": 1299,
+    "currency": "INR",
+    "category": "hoodies",
+    "color": ["black"],
+    "sizes": ["S", "M", "L", "XL"]
+  },
+  {
+    "id": "hoodie-002",
+    "name": "Dusty Beige Oversized Hoodie",
+    "description": "Premium cotton-blend oversized fit.",
+    "price": 1599,
+    "currency": "INR",
+    "category": "hoodies",
+    "color": ["beige", "brown"],
+    "sizes": ["M", "L", "XL"]
+  },
+  {
+    "id": "tshirt-001",
+    "name": "Minimal White T-Shirt",
+    "description": "100% cotton, lightweight, breathable.",
+    "price": 499,
+    "currency": "INR",
+    "category": "tshirts",
+    "color": ["white"],
+    "sizes": ["S", "M", "L", "XL"]
+  },
+  {
+    "id": "tshirt-002",
+    "name": "Graphic Anime Tee",
+    "description": "Premium print, relaxed fit.",
+    "price": 699,
+    "currency": "INR",
+    "category": "tshirts",
+    "color": ["black"],
+    "sizes": ["M", "L"]
+  },
+  {
+    "id": "bottle-001",
+    "name": "Steel Water Bottle",
+    "description": "Insulated bottle keeps drinks cold for 18 hours.",
+    "price": 899,
+    "currency": "INR",
+    "category": "bottles",
+    "color": ["silver"],
+    "sizes": ["750ml"]
+  },
+  {
+    "id": "headphone-001",
+    "name": "Wireless Bluetooth Headphones",
+    "description": "40mm drivers, 20h battery life.",
+    "price": 1799,
+    "currency": "INR",
+    "category": "electronics",
+    "color": ["black"],
+    "sizes": []
+  },
+  {
+    "id": "notebook-001",
+    "name": "A5 Hardcover Notebook",
+    "description": "192 ruled pages, 80gsm cream paper.",
+    "price": 299,
+    "currency": "INR",
+    "category": "stationery",
+    "color": ["green", "red", "blue"],
+    "sizes": []
+  },
+  {
+    "id": "pen-001",
+    "name": "Black Gel Pen Set (Pack of 3)",
+    "description": "0.5mm smooth flow pens.",
+    "price": 150,
+    "currency": "INR",
+    "category": "stationery",
+    "color": ["black"],
+    "sizes": []
+  }
+]
