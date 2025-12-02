@@ -32,6 +32,7 @@ class ImprovAgent(Agent):
 You are RIFF TURNER — the energetic, witty TV host of *IMPROV BATTLE*.
 
 Theme: Slice-of-Life Improv With Absurd Twists.
+
 Always:
 - Introduce rounds dramatically
 - Give clear improv instructions
@@ -39,6 +40,10 @@ Always:
 - React humorously but respectfully
 - End each round with feedback
 - Close the show with a summary
+
+When filling tool outputs:
+- 'generate_scenario' should output a short scenario in field 'scenario'
+- 'generate_reaction' should output feedback in field 'reaction'
 """
         )
 
@@ -51,38 +56,39 @@ Always:
         }
 
     # ============================================================
-    #   Tools (no ctx parameter!)
+    #   Tools (LLM actually fills the fields)
     # ============================================================
 
     @function_tool
-    async def generate_scenario(self) -> str:
+    async def generate_scenario(self) -> dict:
         """
-        Generate a slice-of-life improv scenario.
-        The LLM fills in real content.
+        LLM will fill in:
+        { "scenario": "<slice of life improv prompt>" }
         """
-        return "Generate a scenario."
+        return {"scenario": ""}
 
     @function_tool
-    async def generate_reaction(self, player_input: str, scenario: str) -> str:
+    async def generate_reaction(self, player_input: str, scenario: str) -> dict:
         """
-        Generate host reaction to player improv.
+        LLM will fill in:
+        { "reaction": "<host feedback>" }
         """
-        return "Generate a reaction."
+        return {"reaction": ""}
 
     # ============================================================
-    #   Message Flow
+    #   Main message flow
     # ============================================================
 
     async def on_message(self, ctx, msg):
         text = msg.text.lower().strip()
 
-        # --- Early exit
+        # --- Early exit handling
         if any(x in text for x in ["stop", "quit", "end show"]):
             await ctx.send_message("Ending the show. Thanks for playing Improv Battle!")
             await ctx.session.close()
             return
 
-        # --- PHASE: INTRO
+        # --- PHASE: INTRO ----------------------------------------
         if self.state["phase"] == "intro":
 
             if not self.state["player_name"]:
@@ -93,33 +99,35 @@ Always:
                     "Get ready — chaos and comedy await!"
                 )
 
-            # Start first round
+            # Start round 1
             self.state["current_round"] = 1
             self.state["phase"] = "awaiting_improv"
 
             return await self._start_round(ctx)
 
-        # --- PHASE: AWAITING IMPROV
+        # --- PHASE: AWAITING IMPROV -------------------------------
         if self.state["phase"] == "awaiting_improv":
 
+            # Detect end of scene
             if "end scene" in text or "done" in text or "okay" in text:
                 self.state["phase"] = "reacting"
 
-                reaction = await ctx.call_tool(
+                result = await ctx.call_tool(
                     self.generate_reaction,
                     player_input=msg.text,
                     scenario=self.state["current_scenario"]
                 )
 
+                reaction = result["reaction"]
                 await ctx.send_message(reaction)
 
                 return await self._advance_or_finish(ctx)
 
-            # Otherwise let them continue
+            # Otherwise keep encouraging improv
             await ctx.send_message("Keep going! When you're done, say 'end scene'.")
             return
 
-        # --- PHASE: DONE
+        # --- PHASE: DONE -----------------------------------------
         if self.state["phase"] == "done":
             await ctx.send_message("The show is over — refresh to play again!")
             return
@@ -129,26 +137,28 @@ Always:
     # ============================================================
 
     async def _start_round(self, ctx):
-        n = self.state["current_round"]
+        round_no = self.state["current_round"]
 
-        # Ask LLM to generate scenario
-        scenario = await ctx.call_tool(self.generate_scenario)
+        # Let LLM create a scenario
+        result = await ctx.call_tool(self.generate_scenario)
+        scenario = result["scenario"]
         self.state["current_scenario"] = scenario
 
         await ctx.send_message(
-            f"🔥 ROUND {n} 🔥\n"
+            f"🔥 ROUND {round_no} 🔥\n"
             f"Your slice-of-life scenario:\n\n"
             f"{scenario}\n\n"
-            f"Start improvising! When finished, say 'end scene'."
+            f"Start improvising! When you're done, say 'end scene'."
         )
 
     async def _advance_or_finish(self, ctx):
+        # Move to next round
         if self.state["current_round"] < self.state["max_rounds"]:
             self.state["current_round"] += 1
             self.state["phase"] = "awaiting_improv"
             return await self._start_round(ctx)
 
-        # End the show
+        # End show
         self.state["phase"] = "done"
         await ctx.send_message(
             f"🎉 And that concludes Improv Battle, {self.state['player_name']}! 🎉\n"
